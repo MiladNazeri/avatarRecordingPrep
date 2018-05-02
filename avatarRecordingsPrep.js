@@ -182,7 +182,7 @@ while (currCount <= NUMBER_OF_AVATARS_NEEDED) {
 
     // Copy Textures Over
     fileInputStore.texture_files.forEach( file => {
-        copyFileSync(path.join(fileInputStore.texture_directory, file), path.join(currentAvatarTexturePath, `${currentAvatarName}_${file}`));
+        copyFileSync(path.join(fileInputStore.texture_directory, file), path.join(currentAvatarTexturePath, file));
     });
 
     // Manipulate the Textures
