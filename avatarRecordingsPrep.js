@@ -5,6 +5,8 @@
     const createCSVFile = require('csv-file-creator');
     const jimp = require('jimp');
 
+/*eslint indent: ["off", 0]*/
+
 /*
     // Arg Vars
         const copyLocal = process.argv[2];
@@ -22,14 +24,14 @@
     const dir_out = path.join(__dirname, 'out');
 
 // Init Constants
-    const BASE_UPLOAD_URL = "https://s3.amazonaws.com/hifi-content/milad/ROLC/Organize/Projects/Testing/Flow/out/";
-    const NUMBER_OF_AVATARS_NEEDED = 2;
+    const BASE_UPLOAD_URL = "https://hifi-content.s3.amazonaws.com/milad/ROLC/Organize/Projects/Testing/Flow/out/";
+    const NUMBER_OF_AVATARS_NEEDED = 160;
     const regEx_fst_name = /(name = )(.*?)\n/;
     const regEx_fst_fileName = /(filename = )(.*)(\/.*)(\..*)\n/
     const regEx_fst_textDir = /(texdir = )([\s\S]*)(\/.*)\n/
 
 // General Variables
-    let fbxDirectoryName = "jamica_mon";
+    let fbxDirectoryName = "Jene_5";
     let textureDirectoryName = "textures";   
     let avatarBaseFileName;
     let inputFiles;
@@ -42,7 +44,7 @@
     let currentAvatarTexturePath;
     let currentFolderArray;
     let currentAvatarName;
-    let csvDataArray = [["Avatar_UN", "Avatar_FST", "Avatar_HFR"]];
+    let csvDataArray = [["Avatar_UN", "Avatar_FST",  "Avatar_HFR",  "Avatar_HFR_S3"]];
     let imageOptions = [ 
         {type: "brightness" , options: [-1,1]},
         {type: "contrast" , options: [-1,1]},
@@ -55,13 +57,12 @@
         {type: "color", modifier: "desaturate", options: [0, 100]},
         {type: "color", modifier: "hue", options: [-360, 360]},   
         {type: "color", modifier: "tint", options: [0, 100]}, 
-        {type: "color", modifier: "shade ", options: [0, 100]}, 
         {type: "color", modifier: "red", options: [0, 100]},
         {type: "color", modifier: "green", options: [0, 100]},
         {type: "color", modifier: "blue", options: [0, 100]}
     ];
     let imageOptionsLength = imageOptions.length;
-    console.log("imageOptionsLength", imageOptionsLength);
+    // console.log("imageOptionsLength", imageOptionsLength);
 
 // File Input Store;
     let fileInputStore = {
@@ -90,14 +91,14 @@
             let randomInit = getRandomInt(0, imageOptionsLength);
             // console.log("randominit:", randominit);
             manipArray.push(imageOptions[randomInit])
-            count++
+            count++;
         };
         // console.log("manipArray", manipArray)
         return manipArray;
     }
 
     function processManip(manipArray){
-        console.log("manipArray", manipArray);
+        // console.log("manipArray", manipArray);
         let processManipArray = [];
         let colorArray = [];
         manipArray.forEach((manip)=>{
@@ -107,7 +108,7 @@
                 colorArray.push(
                     {apply: manip.modifier, params: 
                         [getRandomInt(manip.options[0], manip.options[1])]})
-            } else if (manip.options.length = 0) {
+            } else if (manip.options.length === 0) {
                 processManipArray.push({method: manip.type, params: []})
             } else {
                 // console.log("other Array  PUSH");
@@ -161,39 +162,42 @@
     }
     
     function baseFSTMaker(count, fst){
-        let fakeSplitArray = [];
-        let fakeSplit = "name = jamica_mon"
-        fakeSplitArray[0] = fakeSplit;
-        var newFstFile = fst.split('\n');
-        let nameSearch = "name";
+        // let fakeSplitArray = [];
+        // let fakeSplit = "name = jamica_mon"
+        // fakeSplitArray[0] = fakeSplit;
+        // var newFstFile = fst.split('\n');
+        // let nameSearch = "name";
         // name = jamica_mon
-        let fileNamesearch = "filename"
+        // let fileNamesearch = "filename"
         // filename = jamica_mon/jamica_mon.fbx
-        let textDirSearch = "texdir"
+        // let textDirSearch = "texdir"
         // texdir = jamica_mon/textures
-        let nameSearchIndex = newFstFile.indexOf(nameSearch);
-        let nameSearchIndex2 = fakeSplitArray.indexOf(nameSearch);        
-        console.log("nameSearchIndex", nameSearchIndex)
-        console.log("nameSearchIndex2", nameSearchIndex2)
+        // let nameSearchIndex = newFstFile.indexOf(nameSearch);
+        // let nameSearchIndex2 = fakeSplitArray.indexOf(nameSearch);        
+        // console.log("nameSearchIndex", nameSearchIndex)
+        // console.log("nameSearchIndex2", nameSearchIndex2)
         
-        let fileNamesearchIndex = newFstFile.indexOf(fileNamesearch);
-        let textDirSearchIndex = newFstFile.indexOf(textDirSearch);
-        newFstFile[nameSearchIndex] = `name = jamica_mon_${count}`
-        newFstFile[fileNamesearchIndex] = `filename = jamica_mon_${count}/jamica_mon_${count}.fbx`
-        newFstFile[textDirSearchIndex] = `texdir = jamica_mon_${count}/textures`
+        // let fileNamesearchIndex = newFstFile.indexOf(fileNamesearch);
+        // let textDirSearchIndex = newFstFile.indexOf(textDirSearch);
+        let newFstFile = fst;
+        // newFstFile[nameSearchIndex] = `name = jamica_mon_${count}`
+        // newFstFile[fileNamesearchIndex] = `filename = jamica_mon_${count}/jamica_mon_${count}.fbx`
+        // newFstFile[textDirSearchIndex] = `texdir = jamica_mon_${count}/textures`
         // console.log("regEx_fst_name", newFstFile.match(regEx_fst_name));
         // console.log("regEx_fst_name", regEx_fst_name);
-        // newFstFile = newFstFile.replace(regEx_fst_name, `$1$2_${count}\n`)
-        //                        .replace(regEx_fst_fileName, `$1$2_${count}$3_${count}$4\n`)
-        //                        .replace(regEx_fst_textDir, `$1$2_${count}$3\n`);
+        newFstFile = newFstFile.replace(regEx_fst_name, `$1$2_${count}\n`)
+                               .replace(regEx_fst_fileName, `$1$2_${count}$3_${count}$4\n`)
+                               .replace(regEx_fst_textDir, `$1$2_${count}$3\n`);
 
-        console.log("newFstFile", newFstFile.join("\n"));
-        return newFstFile.join("\n");
+        // console.log("newFstFile", newFstFile.join("\n"));
+        // return newFstFile.join("\n");
+        // console.log("newFstFile", newFstFile);
+        return newFstFile;
     }
 
     function csvEntryMaker(avatarUn){
         let array = [];
-        array.push(avatarUn,`${BASE_UPLOAD_URL}${avatarUn}.fst`,`${BASE_UPLOAD_URL}${avatarUn}.hfr`);
+        array.push(avatarUn,`${BASE_UPLOAD_URL}${avatarUn}/${avatarUn}.fst`,`${avatarUn}.hfr`,`${BASE_UPLOAD_URL}hfr/${avatarUn}.hfr`);
         return array;
     }
 
@@ -260,7 +264,6 @@ while (currCount <= NUMBER_OF_AVATARS_NEEDED) {
     currFstFile = baseFSTMaker(currCount, fstFileRead);
     fs.writeFileSync(path.join(currentAvatarBasePath, `${currentAvatarName}.fst`), currFstFile);
 
-    /*###
     // Copy FBX Over
     copyFileSync(
         path.join(fileInputStore.fbx_directory, fileInputStore.fbx_file), 
@@ -271,38 +274,41 @@ while (currCount <= NUMBER_OF_AVATARS_NEEDED) {
         copyFileSync(path.join(fileInputStore.texture_directory, file), path.join(currentAvatarTexturePath, file));
     });
 
-    /*
     // Manipulate the Textures
     currFilesRead = fs.readdirSync(fileInputStore.texture_directory);
     currFilesRead.forEach( file => {
-        let curSource = path.join(fileInputStore.texture_directory, file);
+        let curSource = path.join(currentAvatarTexturePath, file);
         let curExt = path.extname(curSource);
         let curBaseName = path.basename(curSource, curExt);
         jimp.read(curSource)
-            .then( (image) => {
+            .then( image => {
             var innerCounter = 0;
-                // console.log("randominit", getRandomInt(1,10));
-                let manipArray = pickManips(getRandomInt(0,1));
+                let manipArray = pickManips(getRandomInt(1,4));
                 // console.log("manipArray", manipArray);
-                let processmanips = processManip(manipArray)
+                let processmanips = processManip(manipArray);
                 processmanips[0].forEach( manip => {
                     // console.log("manip.method", manip.method)
                     // console.log("manip.params[0]", manip.params[0])
                     let params = manip.params[0];
-                    if (!params){
+                    // console.log("params", params);
+                    if (params === undefined || null){
                         image[manip.method]();
                     } else {
-                        image[manip.method](manip.params[0]);
+                        image[manip.method](params);
+                        
                     }
-                    innerCounter++
-                })
+                    innerCounter++;
+                });
                 image.color(processmanips[1]);
+                let file = curSource;
+                image.write(file);
+                console.log("image done!");
             })
             .catch( (err) => {
-                console.log(err);
+                // console.log(err);
             });
     });
-    */
+    
 
     // Create CSV file Entry
     csvDataArray.push(csvEntryMaker(currentAvatarName));
