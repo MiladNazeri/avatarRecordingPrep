@@ -1,13 +1,7 @@
 "use strict";
 
 //
-//  playRecordingAC.js
-//
-//  Created by David Rowe on 7 Apr 2017.
-//  Copyright 2017 High Fidelity, Inc.
-//
-//  Distributed under the Apache License, Version 2.0.
-//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+//  Hacked playRecordingAC.js
 //
 
 (function () {
@@ -26,6 +20,8 @@
         scriptUUID,
         registerd = false,
         Player;
+
+        var baseURL = "https://hifi-content.s3.amazonaws.com/milad/ROLC/Organize/Projects/Testing/Flow/out/hfr/";
 
     function log(message) {
         print(APP_NAME + " " + scriptUUID + ": " + message);
@@ -53,13 +49,16 @@
         function play(recording, position, orientation) {
             var errorMessage;
 
-            playRecording = function (recording, position, orientation, isManual) {
+            recording = baseURL + recording + ".hfr";
+            console.log("playing:", recording)
+
                 orientation = orientation || Quat.IDENTITY;
                 
                 Recording.loadRecording(recording, function (success) {
                     var errorMessage;
 
                     if (success) {
+                        console.log("success!!")
                         Users.disableIgnoreRadius();
 
                         Agent.isAvatar = true;
@@ -79,6 +78,8 @@
                         UserActivityLogger.logAction("playRecordingAC_play_recording");
                     } else {
                         errorMessage = "Could not load recording " + recording.slice(4);  // Remove leading "atp:".
+                        console.log("errorMessage!!")
+                        
                         log(errorMessage);
                         error(errorMessage);
 
@@ -88,7 +89,6 @@
                     }
                 });
             };
-        }
 
         function stop() {
             log("Stop playing " + recordingFilename);
@@ -140,16 +140,25 @@
     }
 
     function onMessageReceived(channel, message, sender) {
+        // console.log("channel", channel)
+        // console.log("message", message)
+        // console.log("sender", sender)
+        
+        
         message = JSON.parse(message);
         if (channel === ASSIGNMENT_MANAGER_CHANNEL) {
-            switch (messages.action){
+            switch (message.action){
                 case "GET_HEARTBEAT":
+                    console.log(scriptUUID + "Received Get heart beat");
+                    
                     sendHeartbeat();
                     break;
                 case "GET_UUID":
+                    console.log(scriptUUID + "Received Get UUID");
+                    
                     if (registerd === false) {
                         Messages.sendMessage(ASSIGNMENT_MANAGER_CHANNEL, JSON.stringify({
-                            action: "REGISTERME",
+                            action: "REGISTER_ME",
                             uuid: scriptUUID
                         }));
                     }
@@ -162,17 +171,19 @@
         if (channel === HIFI_PLAYER_CHANNEL){
                 switch (message.action) {
                 case "REGISTERATION ACCEPTED":
+                    console.log(scriptUUID + "UUID REGISTERATION ACCEPTED");
                     registerd = true;
                     break;
                 case PLAYER_ACTION_PLAY:
+                    console.log("PLAYING: ", JSON.stringify(message) );
                     if (!Player.isPlaying()) {
-                        Player.play(sender, message.recording, message.position, message.orientation);
+                        Player.play(message.recording, message.position, message.orientation);
                     } else {
                         log("Didn't start playing " + message.recording + " because already playing " + Player.recording());
                     }
                     sendHeartbeat();
                     break;
-                case PLAYER_COMMAND_STOP:
+                case PLAYER_ACTION_STOP:
                     Player.stop();
                     sendHeartbeat();
                     break;
@@ -182,7 +193,8 @@
 
     function setUp() {
         scriptUUID = Agent.sessionUUID;
-
+        console.log(scriptUUID + "setUp");
+        
         Messages.messageReceived.connect(onMessageReceived);
         Messages.subscribe(HIFI_PLAYER_CHANNEL);
         Messages.subscribe(ASSIGNMENT_MANAGER_CHANNEL);
